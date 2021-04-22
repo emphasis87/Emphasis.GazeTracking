@@ -13,7 +13,7 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
 using RBush;
-using static Emphasis.ScreenCapture.Helpers.DebugHelper;
+using static Emphasis.ScreenCapture.Tests.TestHelper;
 
 namespace Emphasis.ScreenCapture.Tests
 {
