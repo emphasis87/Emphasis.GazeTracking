@@ -2,17 +2,13 @@
 using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Cloo;
 using NUnit.Framework;
 using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
-using Device = SharpDX.DXGI.Device;
-using MapFlags = SharpDX.DXGI.MapFlags;
 
-namespace Emphasis.ScreenCapture.Tests
+namespace Emphasis.TextDetection.Tests
 {
 	public class DxgiTests
 	{

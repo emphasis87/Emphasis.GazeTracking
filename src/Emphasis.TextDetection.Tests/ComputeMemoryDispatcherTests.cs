@@ -5,14 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cloo;
 using Emphasis.OpenCL.Helpers;
-using Emphasis.ScreenCapture.Helpers;
-using Emphasis.ScreenCapture.OpenCL;
-using Emphasis.TextDetection;
+using Emphasis.ScreenCapture;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
-using static Emphasis.ScreenCapture.Helpers.DebugHelper;
+using static Emphasis.TextDetection.Tests.TestHelper;
 
-namespace Emphasis.ScreenCapture.Tests
+namespace Emphasis.TextDetection.Tests
 {
 	public class ComputeMemoryDispatcherTests
 	{
@@ -20,25 +18,24 @@ namespace Emphasis.ScreenCapture.Tests
 		public async Task Can_Dispatch()
 		{
 			var manager = new ScreenCaptureManager();
-			var dispatcher = new ComputeMemoryDispatcher();
-
 			var screen = manager.GetScreens().First();
-
-			using var capture = await manager.Capture(screen).FirstAsync();
+			using var capture = await manager.Capture(screen);
 			var width = capture.Width;
 			var height = capture.Height;
+
+			var dispatcher = new ComputeMemoryDispatcher();
 
 			var device = ComputePlatform.Platforms
 				.SelectMany(x => x.Devices)
 				.First(x => x.Type == ComputeDeviceTypes.Gpu);
 
-			using var context = new ComputeContext(new[] {device}, new ComputeContextPropertyList(device.Platform), null, IntPtr.Zero);			
+			using var context = new ComputeContext(new[] { device }, new ComputeContextPropertyList(device.Platform), null, IntPtr.Zero);
 			using var memory = await dispatcher.Dispatch(capture, context);
 
 			using var program = new ComputeProgram(context, KernelSources.grayscale);
 
-			program.Build(new[] {device}, "-cl-std=CL1.2", null, IntPtr.Zero);
-			
+			program.Build(new[] { device }, "-cl-std=CL1.2", null, IntPtr.Zero);
+
 			using var queue = new ComputeCommandQueue(context, device, ComputeCommandQueueFlags.None);
 			using var kernel = program.CreateKernel("grayscale_u8");
 
@@ -53,7 +50,7 @@ namespace Emphasis.ScreenCapture.Tests
 			sw.Start();
 			for (var i = 0; i < n; i++)
 			{
-				queue.Execute(kernel, null, new long[] {width, height}, null, null);
+				queue.Execute(kernel, null, new long[] { width, height }, null, null);
 			}
 
 			queue.Finish();

@@ -1,21 +1,18 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Emphasis.ComputerVision;
 using Emphasis.ComputerVision.Primitives;
-using Emphasis.OpenCL.Extensions;
-using Emphasis.ScreenCapture.Helpers;
+using Emphasis.TextDetection.Tests.samples;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
 using RBush;
-using static Emphasis.ScreenCapture.Tests.TestHelper;
+using Component = Emphasis.ComputerVision.Component;
+using static Emphasis.TextDetection.Tests.TestHelper;
 
-namespace Emphasis.ScreenCapture.Tests
+namespace Emphasis.TextDetection.Tests
 {
 	public class AlgorithmsTests
 	{
@@ -31,7 +28,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var result = new byte[source.Length];
 			UnoptimizedAlgorithms.Gauss(width, height, source, result);
 
-			Run("sample02.png");
+			Run("samples/sample02.png");
 
 			result.RunAs(width, height, 4, "gauss.png");
 		}
@@ -53,7 +50,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			UnoptimizedAlgorithms.Sobel3(width, height, source, dx, dy, gradient, angle, neighbors);
 
-			Run("sample00.png");
+			Run("samples/sample00.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
 
 			dx.RunAs(width, height, 1, "sobel_dx.png");
@@ -68,7 +65,7 @@ namespace Emphasis.ScreenCapture.Tests
 		{
 			var sourceBitmap = Samples.sample13;
 
-			Run("sample13.png");
+			Run("samples/sample13.png");
 
 			var source = sourceBitmap.ToBytes();
 
@@ -84,7 +81,7 @@ namespace Emphasis.ScreenCapture.Tests
 			sw.Start();
 			for (var i = 0; i < n; i++)
 			{
-				await Emphasis.ComputerVision.Core.Algorithms.Grayscale(input, output);
+				await ComputerVision.Core.Algorithms.Grayscale(input, output);
 			}
 			sw.Stop();
 			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
@@ -97,10 +94,10 @@ namespace Emphasis.ScreenCapture.Tests
 		{
 			var sourceBitmap = Samples.sample13;
 
-			Run("sample13.png");
+			Run("samples/sample13.png");
 
 			var source = sourceBitmap.ToBytes();
-			
+
 			var w = sourceBitmap.Width;
 			var h = sourceBitmap.Height;
 			var n = w * h;
@@ -124,7 +121,7 @@ namespace Emphasis.ScreenCapture.Tests
 		{
 			var sourceBitmap = Samples.sample03;
 
-			Run("sample03.png");
+			Run("samples/sample03.png");
 
 			var source = sourceBitmap.ToBytes();
 
@@ -135,7 +132,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var n = width * height;
 
 			var grayscale = new byte[n];
-			UnoptimizedAlgorithms.Grayscale(width,height, source, grayscale);
+			UnoptimizedAlgorithms.Grayscale(width, height, source, grayscale);
 
 			var background = new byte[n * channels];
 			var backgroundSize = 7;
@@ -161,7 +158,7 @@ namespace Emphasis.ScreenCapture.Tests
 		{
 			var sourceBitmap = Samples.sample03;
 
-			Run("sample03.png");
+			Run("samples/sample03.png");
 
 			var source = sourceBitmap.ToBytes();
 
@@ -189,7 +186,7 @@ namespace Emphasis.ScreenCapture.Tests
 		{
 			var sourceBitmap = Samples.sample03;
 
-			Run("sample03.png");
+			Run("samples/sample03.png");
 
 			var source = sourceBitmap.ToBytes();
 			var channels = 4;
@@ -257,13 +254,13 @@ namespace Emphasis.ScreenCapture.Tests
 			var cmp1 = new float[n];
 			var swt0 = new int[n];
 			var swt1 = new int[n];
-			
+
 			Array.Fill(swt0, int.MaxValue);
 			Array.Fill(swt1, int.MaxValue);
 
 			UnoptimizedAlgorithms.Grayscale(width, height, src, grayscale);
 			UnoptimizedAlgorithms.Gauss(width, height, src, gauss);
-			UnoptimizedAlgorithms.Sobel3(width, height, gauss,  dx, dy, gradient, angle, neighbors);
+			UnoptimizedAlgorithms.Sobel3(width, height, gauss, dx, dy, gradient, angle, neighbors);
 			UnoptimizedAlgorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp0, cmp1);
 			UnoptimizedAlgorithms.StrokeWidthTransform(width, height, src, gradient, nms, angle, dx, dy, swt0, swt1,
 				sourceChannels: 4,
@@ -400,7 +397,7 @@ namespace Emphasis.ScreenCapture.Tests
 					text1[i] = c.Validity;
 			}
 
-			text0.ReplaceGreaterOrEquals(1,255).RunAs(width, height, 1, "text0.png");
+			text0.ReplaceGreaterOrEquals(1, 255).RunAs(width, height, 1, "text0.png");
 			text0.RunAsText(width, height, 1, "text0.txt");
 			text1.ReplaceGreaterOrEquals(1, 255).RunAs(width, height, 1, "text1.png");
 			text1.RunAsText(width, height, 1, "text1.txt");
@@ -418,13 +415,13 @@ namespace Emphasis.ScreenCapture.Tests
 			var b6 = new Box2D(11, 11, 11, 11);
 
 			var rtree = new RBush<Box2D>();
-			rtree.BulkLoad(new[] {b0, b1, b2, b3, b4, b5, b6});
+			rtree.BulkLoad(new[] { b0, b1, b2, b3, b4, b5, b6 });
 
 			var content = rtree.Search(b0.Envelope).ToArray();
 
 			// Contains even partial matches
-			content.Should().Contain(new[] {b0, b1, b2, b3, b4, b5});
-			content.Should().NotContain(new[] {b6});
+			content.Should().Contain(new[] { b0, b1, b2, b3, b4, b5 });
+			content.Should().NotContain(new[] { b6 });
 		}
 
 		[Test]
@@ -440,7 +437,7 @@ namespace Emphasis.ScreenCapture.Tests
 			{
 				max, max, max,   3, max, max,   1, max, max, max, max,   1,   1,   1,
 				max, max,   2,   2,   1, max,   1, max, max, max, max,   1,   1,   1,
-				max, max, max, max,   4, max, max,   1, max, max, max,   1,   1,   1, 
+				max, max, max, max,   4, max, max,   1, max, max, max,   1,   1,   1,
 				max, max, max, max, max,   2, max, max,   1, max, max, max,   1, max,
 				  1, max, max, max, max, max, max,   1, max,   1, max,   1, max, max,
 				 10,   3, max, max, max, max,   1, max, max, max,   1, max, max, max,
@@ -464,8 +461,8 @@ namespace Emphasis.ScreenCapture.Tests
 
 			swt.Length.Should().Be(width * height);
 
-			var coloring = new int [height * width];
-			
+			var coloring = new int[height * width];
+
 			var rounds = UnoptimizedAlgorithms.ColorComponentsFixedPoint(
 				width, height, swt, coloring);
 
@@ -627,7 +624,7 @@ namespace Emphasis.ScreenCapture.Tests
 			roundsFixedPoint.Should().BeLessThan(roundsWatershed);
 			roundsBackPropagation.Should().BeLessThan(roundsFixedPoint);
 		}
-		
+
 		[Test]
 		public void Line_Test()
 		{
@@ -661,7 +658,7 @@ namespace Emphasis.ScreenCapture.Tests
 				}
 			}
 
-			data.RunAs(width,height, 1, "line.png");
+			data.RunAs(width, height, 1, "line.png");
 		}
 
 		[Test]

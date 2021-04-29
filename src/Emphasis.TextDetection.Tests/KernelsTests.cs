@@ -6,16 +6,17 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Cloo;
+
 using Emphasis.OpenCL;
 using Emphasis.OpenCL.Helpers;
-using Emphasis.ScreenCapture.Helpers;
-using Emphasis.ScreenCapture.OpenCL;
+using Emphasis.ScreenCapture;
 using Emphasis.TextDetection;
+using Emphasis.TextDetection.Tests.samples;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
-using static Emphasis.ScreenCapture.Helpers.DebugHelper;
+using static Emphasis.TextDetection.Tests.TestHelper;
 
-namespace Emphasis.ScreenCapture.Tests
+namespace Emphasis.TextDetection.Tests
 {
 	public class KernelsTests
 	{
@@ -23,15 +24,14 @@ namespace Emphasis.ScreenCapture.Tests
 		public async Task Can_EnqueueGrayscale()
 		{
 			var manager = new ScreenCaptureManager();
-			var dispatcher = new ComputeMemoryDispatcher();
-
 			var screen = manager.GetScreens().First();
-
-			var captures = manager.Capture(screen);
-			using var capture = await captures.FirstAsync();
+			using var capture = await manager.Capture(screen);
 			var width = capture.Width;
 			var height = capture.Height;
-			var globalWorkSize = new long[] {width, height};
+
+			var dispatcher = new ComputeMemoryDispatcher();
+
+			var globalWorkSize = new long[] { width, height };
 
 			var device = ComputePlatform.Platforms
 				.SelectMany(x => x.Devices)
@@ -86,13 +86,13 @@ namespace Emphasis.ScreenCapture.Tests
 		public async Task Can_EnqueueThreshold()
 		{
 			var manager = new ScreenCaptureManager();
-			var dispatcher = new ComputeMemoryDispatcher();
-
 			var screen = manager.GetScreens().First();
-
-			using var capture = await manager.Capture(screen).FirstAsync();
+			using var capture = await manager.Capture(screen);
 			var width = capture.Width;
 			var height = capture.Height;
+
+			var dispatcher = new ComputeMemoryDispatcher();
+
 			var globalWorkSize = new long[] { width, height };
 
 			var device = ComputePlatform.Platforms
@@ -136,7 +136,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var context = computeManager.GetContext(device);
 			var sample = Samples.sample02;
 			var sampleBytes = sample.ToBytes();
-			
+
 			var width = sample.Width;
 			var height = sample.Height;
 			var globalWorkSize = new long[] { width, height };

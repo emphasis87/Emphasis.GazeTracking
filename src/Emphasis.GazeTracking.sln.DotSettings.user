@@ -32,12 +32,8 @@
 	
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e0ae4068_002Df9d4_002D4ae4_002D804d_002D3f661699df1f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Resize_Canny #4" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.Canny&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.MSER&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.Resize_Canny&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.Resize_MSER&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.Sobel&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::87B69944-EB08-4E89-8C9A-3BA6B24F6AB8::.NETCoreApp,Version=v3.1::Emphasis.TextDetection.Tests.ScreenCaptureManagerTests.Capture&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::87B69944-EB08-4E89-8C9A-3BA6B24F6AB8::.NETCoreApp,Version=v3.1::Emphasis.TextDetection.Tests.EmguTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::87B69944-EB08-4E89-8C9A-3BA6B24F6AB8::.NETCoreApp,Version=v3.1::Emphasis.TextDetection.Tests.AlgorithmsTests&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	

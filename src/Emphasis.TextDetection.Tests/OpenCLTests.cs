@@ -9,17 +9,14 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Cloo;
 using Cloo.Bindings;
-using Emphasis.OpenCL.Extensions;
 using Emphasis.OpenCL.Helpers;
-using Emphasis.ScreenCapture.Helpers;
 using FluentAssertions;
 using NUnit.Framework;
 using SharpDX.DXGI;
 
-using static Emphasis.ScreenCapture.Helpers.DebugHelper;
-using CL12x = Emphasis.OpenCL.Extensions.CL12x;
+using static Emphasis.TextDetection.Tests.TestHelper;
 
-namespace Emphasis.ScreenCapture.Tests
+namespace Emphasis.TextDetection.Tests
 {
 	public class OpenCLTests
 	{
@@ -32,71 +29,7 @@ namespace Emphasis.ScreenCapture.Tests
 				Console.WriteLine($"Platform Version: {platform.Version}");
 				Console.WriteLine($"Platform Vendor: {platform.Vendor}");
 				Console.WriteLine($"Platform Extensions: {platform.Extensions.Aggregate((x, y) => $"{x} {y}")}");
-
-				if (CL12x.TryFindClGetDeviceIDsFromD3D11KHR(platform, out var clGetDeviceIDsFromD3D11KHR))
-				{
-					var count = 0;
-					var factory = new Factory1();
-					foreach (var adapter1 in factory.Adapters1)
-					{
-						var devices = new IntPtr[10];
-						clGetDeviceIDsFromD3D11KHR(
-							platform.Handle.Value,
-							cl_d3d11_device_source_khr.CL_D3D11_DXGI_ADAPTER_KHR,
-							adapter1.NativePointer,
-							cl_d3d11_device_set_khr.CL_ALL_DEVICES_FOR_D3D11_KHR,
-							10,
-							devices,
-							out var numDevices);
-
-						count += numDevices;
-						if (numDevices > 0)
-							Console.WriteLine($"\tAdapter {adapter1.Description1.Description} [{numDevices}]:");
-
-						foreach (var deviceId in devices)
-						{
-							var oclDevice = platform.Devices.FirstOrDefault(x => x.Handle.Value == deviceId);
-							if (oclDevice != null)
-								Console.WriteLine($"\t\t{oclDevice.Name}");
-						}
-
-					}
-
-					Console.WriteLine($"D3D11 KHR sharing [{count}]");
-				}
-
-				if (CL12x.TryFindClGetDeviceIDsFromD3D11NV(platform, out var clGetDeviceIDsFromD3D11NV))
-				{
-					var count = 0;
-					var factory = new Factory1();
-					foreach (var adapter1 in factory.Adapters1)
-					{
-						var devices = new IntPtr[10];
-						clGetDeviceIDsFromD3D11NV(
-							platform.Handle.Value,
-							cl_d3d11_device_source_nv.CL_D3D11_DXGI_ADAPTER_NV,
-							adapter1.NativePointer,
-							cl_d3d11_device_set_nv.CL_ALL_DEVICES_FOR_D3D11_NV,
-							10,
-							devices,
-							out var numDevices);
-
-						count += numDevices;
-						if (numDevices > 0)
-							Console.WriteLine($"\tAdapter {adapter1.Description1.Description} [{numDevices}]:");
-
-						foreach (var deviceId in devices)
-						{
-							var oclDevice = platform.Devices.FirstOrDefault(x => x.Handle.Value == deviceId);
-							if (oclDevice != null)
-								Console.WriteLine($"\t\t{oclDevice.Name}");
-						}
-
-					}
-
-					Console.WriteLine($"D3D11 NV sharing [{count}]");
-				}
-
+				
 				foreach (var device in platform.Devices)
 				{
 					Console.WriteLine($"\tDevice Name: {device.Name}");
@@ -160,7 +93,7 @@ void kernel sum(
 			queue.Execute(kernel, null, new long[] {source.Length}, null, events);
 
 			var targetPtr = queue.Map(targetBuffer, true, ComputeMemoryMappingFlags.Read, 0, source.Length, events);
-			await events.WaitForEvents();
+			//await events.WaitForEvents();
 
 			unsafe
 			{
@@ -172,7 +105,7 @@ void kernel sum(
 			}
 
 			queue.Unmap(targetBuffer, ref targetPtr, events);
-			await events.WaitForEvents();
+			//await events.WaitForEvents();
 		}
 
 		[Test]
@@ -218,7 +151,7 @@ void kernel sum(
 				var events = new List<ComputeEventBase>();
 				queue.Execute(kernel, null, new long[] {source.Length}, null, events);
 
-				await events.WaitForEvents();
+				//await events.WaitForEvents();
 
 				for (var i = 0; i < target.Length; i++)
 				{
@@ -341,7 +274,7 @@ void kernel fill(
 
 			var events = new List<ComputeEventBase>();
 			queue.Execute(kernel, null, new long[] { 10 }, null, events);
-			await events.WaitForEvents();
+			//await events.WaitForEvents();
 
 			unsafe
 			{
@@ -402,7 +335,7 @@ void kernel fill(
 			kernel.SetMemoryArgument(0, sourceBuffer);
 			kernel.SetMemoryArgument(1, targetBuffer);
 
-			queue.Execute(kernel, null, new long[] {w, h}, null, null);
+			queue.Execute(kernel, null, new long[] { w, h }, null, null);
 			queue.Finish();
 
 			target.SaveFormatted("target.txt", w, h, channels: 4);

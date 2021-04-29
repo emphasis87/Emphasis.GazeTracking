@@ -4,59 +4,19 @@ using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Features2D;
-using Emgu.CV.Structure;
 using Emgu.CV.Util;
-using Emphasis.ScreenCapture.Helpers;
+using Emphasis.TextDetection.Tests.samples;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
-using static Emphasis.ScreenCapture.Helpers.DebugHelper;
+using static Emphasis.TextDetection.Tests.TestHelper;
 
-namespace Emphasis.ScreenCapture.Tests
+namespace Emphasis.TextDetection.Tests
 {
 	public class EmguTests
 	{
-		[Test]
-		public void Grayscale()
-		{
-			var sourceBitmap = Samples.sample13;
-
-			var source = sourceBitmap.ToBytes();
-
-			var width = sourceBitmap.Width;
-			var height = sourceBitmap.Height;
-
-			var data = new byte[height, width, 4];
-			for (var y = 0; y < height; y++)
-			{
-				for (var x = 0; x < width; x++)
-				{
-					var d = y * (width * 4) + x * 4;
-					for (var c = 0; c < 4; c++)
-					{
-						data[y, x, c] = source[d + c];
-					}
-				}
-			}
-			
-			var image = new Image<Bgra, byte>(data);
-			
-			var n = 10000;
-			var sw = new Stopwatch();
-			using (var gray = new UMat())
-			{
-				CvInvoke.CvtColor(image, gray, ColorConversion.Bgra2Gray);
-				sw.Start();
-				for (var i = 0; i < n; i++)
-				{
-					CvInvoke.CvtColor(image, gray, ColorConversion.Bgra2Gray);
-				}
-			}
-			sw.Stop();
-			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
-		}
-
-		[Test]
-		public void Sobel()
+		[TestCase(false)]
+		[TestCase(true)]
+		public void Sobel(bool umat)
 		{
 			var sourceBitmap = Samples.sample13;
 
@@ -68,13 +28,13 @@ namespace Emphasis.ScreenCapture.Tests
 			var srcMat = sourceBitmap.ToMat();
 			srcMat.CopyTo(src);
 
-			var n = 10000;
+			var n = 1000;
 			var sw = new Stopwatch();
-			using var gray = new UMat();
-
-			using var blurred = new UMat();
-			using var grad_x = new UMat();
-			using var grad_y = new UMat();
+			
+			using var blurred = umat ? (IInputOutputArray) new UMat() : new Mat(w, h, DepthType.Cv8U, 4);
+			using var gray = umat ? (IInputOutputArray)new UMat() : new Mat(w, h, DepthType.Cv8U, 1);
+			using var grad_x = umat ? (IInputOutputArray)new UMat() : new Mat(w, h, DepthType.Cv16S, 4);
+			using var grad_y = umat ? (IInputOutputArray)new UMat() : new Mat(w, h, DepthType.Cv16S, 4);
 
 			CvInvoke.GaussianBlur(src, blurred, new Size(3, 3), 0, 0, BorderType.Default);
 			CvInvoke.CvtColor(blurred, gray, ColorConversion.Bgra2Gray);
@@ -91,12 +51,19 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 
 			sw.Stop();
-			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
+			Console.WriteLine($"{(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
 
-			grad_x.Save("grad_x.png");
-			grad_y.Save("grad_y.png");
+			if (grad_x is UMat ux)
+				ux.Save("grad_x.png");
+			if (grad_x is Mat mx)
+				mx.Save("grad_x.png");
 
-			Run("sample13.png");
+			if (grad_y is UMat uy)
+				uy.Save("grad_y.png");
+			if (grad_y is Mat my)
+				my.Save("grad_y.png");
+
+			Run("samples/sample13.png");
 			Run("grad_x.png");
 			Run("grad_y.png");
 		}
@@ -105,10 +72,7 @@ namespace Emphasis.ScreenCapture.Tests
 		public void Grayscale_UMat()
 		{
 			var sourceBitmap = Samples.sample13;
-
-			var w = sourceBitmap.Width;
-			var h = sourceBitmap.Height;
-
+			
 			using var src = new UMat();
 
 			var srcMat = sourceBitmap.ToMat();
@@ -126,9 +90,32 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 
 			sw.Stop();
-			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
+			Console.WriteLine($"{(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
+		}
 
-			gray.Bytes.RunAs(w, h, 1, "gray.png");
+		[Test]
+		public void Grayscale_Mat()
+		{
+			var sourceBitmap = Samples.sample13;
+			
+			using var src = new Mat();
+
+			var srcMat = sourceBitmap.ToMat();
+			srcMat.CopyTo(src);
+
+			var n = 1000;
+			var sw = new Stopwatch();
+			using var gray = new Mat();
+
+			CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
+			sw.Start();
+			for (var i = 0; i < n; i++)
+			{
+				CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
+			}
+
+			sw.Stop();
+			Console.WriteLine($"{(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
 		}
 
 		[Test]
@@ -170,11 +157,11 @@ namespace Emphasis.ScreenCapture.Tests
 
 			sw.Stop();
 
-			Console.WriteLine((int)(sw.Elapsed.TotalMicroseconds() / n));
+			Console.WriteLine($"{(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
 			Console.WriteLine($"Exceptions {exCount}");
 
-			Run("sample13.png");
-			dest1.Bytes.RunAs(w, h, 1, "canny.png");
+			Run("samples/sample13.png");
+			//dest1.Bytes.RunAs(w, h, 1, "canny.png");
 		}
 
 		[Test]
@@ -218,10 +205,10 @@ namespace Emphasis.ScreenCapture.Tests
 			
 			sw.Stop();
 
-			Console.WriteLine((int)(sw.Elapsed.TotalMicroseconds() / n));
+			Console.WriteLine($"{(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
 			Console.WriteLine($"Exceptions {exCount}");
 
-			Run("sample13.png");
+			Run("samples/sample13.png");
 
 			canny.Save("canny.png");
 			Run("canny.png");
@@ -257,9 +244,9 @@ namespace Emphasis.ScreenCapture.Tests
 
 			sw.Stop();
 
-			Console.WriteLine((int)(sw.Elapsed.TotalMicroseconds() / n));
+			Console.WriteLine($"{(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
 
-			Run("sample13.png");
+			Run("samples/sample13.png");
 			
 			dest.Save("resize.png");
 			Run("resize.png");
@@ -298,7 +285,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			sw.Stop();
 
-			Console.WriteLine((int)(sw.Elapsed.TotalMicroseconds() / n));
+			Console.WriteLine($"{(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
 
 			var result = new byte[w * h];
 			foreach (var mser in msers.ToArrayOfArray())
@@ -314,8 +301,8 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 
 
-			Run("sample13.png");
-			result.RunAs(w, h, 1, "mser.png");
+			Run("samples/sample13.png");
+			//result.RunAs(w, h, 1, "mser.png");
 		}
 	}
 }
