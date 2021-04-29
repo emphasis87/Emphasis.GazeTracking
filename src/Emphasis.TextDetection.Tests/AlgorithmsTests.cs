@@ -73,8 +73,8 @@ namespace Emphasis.TextDetection.Tests
 			var h = sourceBitmap.Height;
 
 			var result = new byte[h * w];
-			var input = new Matrix<byte>(w, h, 4, source);
-			var output = new Matrix<byte>(w, h, 1, result);
+			var input = new ComputerVision.Matrix<byte>(w, h, 4, source);
+			var output = new ComputerVision.Matrix<byte>(w, h, 1, result);
 
 			var n = 2000;
 			var sw = new Stopwatch();

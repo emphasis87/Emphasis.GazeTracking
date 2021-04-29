@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Cloo;
-using Cloo.Bindings;
 using Emphasis.OpenCL.Helpers;
 using FluentAssertions;
 using NUnit.Framework;
-using SharpDX.DXGI;
-
 using static Emphasis.TextDetection.Tests.TestHelper;
 
 namespace Emphasis.TextDetection.Tests
