@@ -6,11 +6,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Cloo;
-
 using Emphasis.OpenCL;
 using Emphasis.OpenCL.Helpers;
 using Emphasis.ScreenCapture;
-using Emphasis.TextDetection;
 using Emphasis.TextDetection.Tests.samples;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
@@ -29,7 +27,7 @@ namespace Emphasis.TextDetection.Tests
 			var width = capture.Width;
 			var height = capture.Height;
 
-			var dispatcher = new ComputeMemoryDispatcher();
+			using var bitmap = await capture.ToBitmap();
 
 			var globalWorkSize = new long[] { width, height };
 
@@ -39,8 +37,8 @@ namespace Emphasis.TextDetection.Tests
 
 			using var computeManager = new ComputeManager();
 			using var kernels = new Kernels(computeManager);
-			var context = computeManager.GetContext(device);
-			using var image = await dispatcher.Dispatch(capture, context);
+			using var context = computeManager.GetContext(device);
+			using var image = context.CreateImage2D(bitmap.ToBytes(), width, height);
 
 			var grayscale = new byte[height * width];
 			using var grayscaleBuffer = context.CreateBuffer(grayscale);
@@ -49,7 +47,7 @@ namespace Emphasis.TextDetection.Tests
 			var events = new List<ComputeEventBase>();
 			var sw = new Stopwatch();
 			sw.Start();
-
+			
 			for (var i = 0; i < n; i++)
 			{
 				kernels.EnqueueGrayscale(device, globalWorkSize, image, grayscaleBuffer, null);
@@ -64,8 +62,8 @@ namespace Emphasis.TextDetection.Tests
 			sw.Stop();
 
 			// somehow this is only required on my laptop, maybe cpu/gpu memory structure
-			GCHandle pinned = GCHandle.Alloc(grayscale, GCHandleType.Pinned);
-			IntPtr address = pinned.AddrOfPinnedObject();
+			var pinned = GCHandle.Alloc(grayscale, GCHandleType.Pinned);
+			var address = pinned.AddrOfPinnedObject();
 
 			queue.Read(grayscaleBuffer, true, 0, width * height, address, null);
 
@@ -91,8 +89,8 @@ namespace Emphasis.TextDetection.Tests
 			var width = capture.Width;
 			var height = capture.Height;
 
-			var dispatcher = new ComputeMemoryDispatcher();
-
+			var bitmap = await capture.ToBitmap();
+			
 			var globalWorkSize = new long[] { width, height };
 
 			var device = ComputePlatform.Platforms
@@ -101,8 +99,8 @@ namespace Emphasis.TextDetection.Tests
 
 			using var computeManager = new ComputeManager();
 			using var kernels = new Kernels(computeManager);
-			var context = computeManager.GetContext(device);
-			using var image = await dispatcher.Dispatch(capture, context);
+			using var context = computeManager.GetContext(device);
+			using var image = context.CreateImage2D(bitmap.ToBytes(), width, height);
 
 			var grayscale = new byte[height * width];
 			using var grayscaleBuffer = context.CreateBuffer(grayscale);
@@ -162,7 +160,7 @@ namespace Emphasis.TextDetection.Tests
 			var gaussBlurBitmap = gaussBlur.ToBitmap(width, height, 1);
 			var gaussBlurPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "gauss_blur.png"));
 			gaussBlurBitmap.Save(gaussBlurPath);
-
+			/*
 			var gauss = new float[][]
 			{
 				new[] {0.0625f, 0.1250f, 0.0625f},
@@ -200,10 +198,10 @@ namespace Emphasis.TextDetection.Tests
 			var gauss2Bitmap = gauss2.ToBitmap(width, height, 1);
 			var gauss2Path = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "gauss2.png"));
 			gauss2Bitmap.Save(gauss2Path);
-
+			*/
 			Run(grayscalePath);
 			Run(gaussBlurPath);
-			Run(gauss2Path);
+			//Run(gauss2Path);
 		}
 
 		[Test]

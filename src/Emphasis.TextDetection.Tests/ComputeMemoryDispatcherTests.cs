@@ -1,77 +1,77 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Cloo;
-using Emphasis.OpenCL.Helpers;
-using Emphasis.ScreenCapture;
-using FluentAssertions.Extensions;
-using NUnit.Framework;
-using static Emphasis.TextDetection.Tests.TestHelper;
+﻿//using System;
+//using System.Diagnostics;
+//using System.IO;
+//using System.Linq;
+//using System.Threading.Tasks;
+//using Cloo;
+//using Emphasis.OpenCL.Helpers;
+//using Emphasis.ScreenCapture;
+//using FluentAssertions.Extensions;
+//using NUnit.Framework;
+//using static Emphasis.TextDetection.Tests.TestHelper;
 
-namespace Emphasis.TextDetection.Tests
-{
-	public class ComputeMemoryDispatcherTests
-	{
-		[Test]
-		public async Task Can_Dispatch()
-		{
-			var manager = new ScreenCaptureManager();
-			var screen = manager.GetScreens().First();
-			using var capture = await manager.Capture(screen);
-			var width = capture.Width;
-			var height = capture.Height;
+//namespace Emphasis.TextDetection.Tests
+//{
+//	public class ComputeMemoryDispatcherTests
+//	{
+//		[Test]
+//		public async Task Can_Dispatch()
+//		{
+//			var manager = new ScreenCaptureManager();
+//			var screen = manager.GetScreens().First();
+//			using var capture = await manager.Capture(screen);
+//			var width = capture.Width;
+//			var height = capture.Height;
 
-			var dispatcher = new ComputeMemoryDispatcher();
+//			var dispatcher = new ComputeMemoryDispatcher();
 
-			var device = ComputePlatform.Platforms
-				.SelectMany(x => x.Devices)
-				.First(x => x.Type == ComputeDeviceTypes.Gpu);
+//			var device = ComputePlatform.Platforms
+//				.SelectMany(x => x.Devices)
+//				.First(x => x.Type == ComputeDeviceTypes.Gpu);
 
-			using var context = new ComputeContext(new[] { device }, new ComputeContextPropertyList(device.Platform), null, IntPtr.Zero);
-			using var memory = await dispatcher.Dispatch(capture, context);
+//			using var context = new ComputeContext(new[] { device }, new ComputeContextPropertyList(device.Platform), null, IntPtr.Zero);
+//			using var memory = await dispatcher.Dispatch(capture, context);
 
-			using var program = new ComputeProgram(context, KernelSources.grayscale);
+//			using var program = new ComputeProgram(context, KernelSources.grayscale);
 
-			program.Build(new[] { device }, "-cl-std=CL1.2", null, IntPtr.Zero);
+//			program.Build(new[] { device }, "-cl-std=CL1.2", null, IntPtr.Zero);
 
-			using var queue = new ComputeCommandQueue(context, device, ComputeCommandQueueFlags.None);
-			using var kernel = program.CreateKernel("grayscale_u8");
+//			using var queue = new ComputeCommandQueue(context, device, ComputeCommandQueueFlags.None);
+//			using var kernel = program.CreateKernel("grayscale_u8");
 
-			var target = new byte[width * height];
-			using var resultBuffer = context.CreateBuffer(target);
+//			var target = new byte[width * height];
+//			using var resultBuffer = context.CreateBuffer(target);
 
-			kernel.SetMemoryArgument(0, memory);
-			kernel.SetMemoryArgument(1, resultBuffer);
+//			kernel.SetMemoryArgument(0, memory);
+//			kernel.SetMemoryArgument(1, resultBuffer);
 
-			var n = 10000;
-			var sw = new Stopwatch();
-			sw.Start();
-			for (var i = 0; i < n; i++)
-			{
-				queue.Execute(kernel, null, new long[] { width, height }, null, null);
-			}
+//			var n = 10000;
+//			var sw = new Stopwatch();
+//			sw.Start();
+//			for (var i = 0; i < n; i++)
+//			{
+//				queue.Execute(kernel, null, new long[] { width, height }, null, null);
+//			}
 
-			queue.Finish();
-			sw.Stop();
-			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
+//			queue.Finish();
+//			sw.Stop();
+//			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
 
-			var result = target.ToBitmap(width, height, 1);
-			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "grayscale.png"));
-			result.Save(resultPath);
+//			var result = target.ToBitmap(width, height, 1);
+//			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "grayscale.png"));
+//			result.Save(resultPath);
 
-			Run(resultPath);
-		}
+//			Run(resultPath);
+//		}
 
-		private void OnProgramBuilt(ComputeProgram program, ComputeDevice device)
-		{
-			var status = program.GetBuildStatus(device);
-			if (status == ComputeProgramBuildStatus.Error)
-			{
-				var log = program.GetBuildLog(device);
-				Console.WriteLine(log);
-			}
-		}
-	}
-}
+//		private void OnProgramBuilt(ComputeProgram program, ComputeDevice device)
+//		{
+//			var status = program.GetBuildStatus(device);
+//			if (status == ComputeProgramBuildStatus.Error)
+//			{
+//				var log = program.GetBuildLog(device);
+//				Console.WriteLine(log);
+//			}
+//		}
+//	}
+//}
