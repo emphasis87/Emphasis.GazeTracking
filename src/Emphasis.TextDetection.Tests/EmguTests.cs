@@ -164,22 +164,33 @@ namespace Emphasis.TextDetection.Tests
 			//dest1.Bytes.RunAs(w, h, 1, "canny.png");
 		}
 
-		[Test]
-		public void Resize_Canny()
+		[TestCase(false)]
+		[TestCase(true)]
+		public void Resize_Canny(bool useUmat)
 		{
 			var sourceBitmap = Samples.sample13;
 
 			var w = sourceBitmap.Width;
 			var h = sourceBitmap.Height;
 
-			using var src = new UMat();
+			IInputOutputArray CreateMat() => useUmat ? (IInputOutputArray) new UMat() : new Mat();
+
+			void Save(IInputOutputArray mat, string filename)
+			{
+				if (mat is UMat umat)
+					umat.Save(filename);
+				if (mat is Mat m)
+					m.Save(filename);
+			}
+
+			using var src = CreateMat();
 
 			var srcMat = sourceBitmap.ToMat();
 			srcMat.CopyTo(src);
 
-			using var gray = new UMat();
-			using var resized = new UMat();
-			using var canny = new UMat();
+			using var gray = CreateMat();
+			using var resized = CreateMat();
+			using var canny = CreateMat();
 
 			CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
 			CvInvoke.Resize(gray, resized, new Size(w * 2, h * 2));
@@ -210,7 +221,7 @@ namespace Emphasis.TextDetection.Tests
 
 			Run("samples/sample13.png");
 
-			canny.Save("canny.png");
+			Save(canny, "canny.png");
 			Run("canny.png");
 		}
 
