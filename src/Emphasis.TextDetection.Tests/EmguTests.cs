@@ -176,8 +176,6 @@ namespace Emphasis.TextDetection.Tests
 			{
 				try
 				{
-					CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
-					CvInvoke.Resize(gray, resized, new Size(w * 2, h * 2));
 					CvInvoke.Canny(resized, canny, 100, 40);
 				}
 				catch (Exception ex)
