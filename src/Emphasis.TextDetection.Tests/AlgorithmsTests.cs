@@ -78,12 +78,14 @@ namespace Emphasis.TextDetection.Tests
 
 			var n = 2000;
 			var sw = new Stopwatch();
+			
 			sw.Start();
 			for (var i = 0; i < n; i++)
 			{
 				await ComputerVision.Core.Algorithms.Grayscale(input, output);
 			}
 			sw.Stop();
+
 			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
 
 			result.RunAs(w, h, 1, "grayscale.png");

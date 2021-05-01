@@ -16,25 +16,25 @@ namespace Emphasis.TextDetection.Tests
 	{
 		[TestCase(false)]
 		[TestCase(true)]
-		public void Sobel(bool umat)
+		public void Sobel(bool useUmat)
 		{
 			var sourceBitmap = Samples.sample13;
 
 			var w = sourceBitmap.Width;
 			var h = sourceBitmap.Height;
 
-			using var src = new UMat();
+			using var src = CreateMat(useUmat);
 
 			var srcMat = sourceBitmap.ToMat();
 			srcMat.CopyTo(src);
 
 			var n = 1000;
 			var sw = new Stopwatch();
-			
-			using var blurred = umat ? (IInputOutputArray) new UMat() : new Mat(w, h, DepthType.Cv8U, 4);
-			using var gray = umat ? (IInputOutputArray)new UMat() : new Mat(w, h, DepthType.Cv8U, 1);
-			using var grad_x = umat ? (IInputOutputArray)new UMat() : new Mat(w, h, DepthType.Cv16S, 4);
-			using var grad_y = umat ? (IInputOutputArray)new UMat() : new Mat(w, h, DepthType.Cv16S, 4);
+
+			using var blurred = CreateMat(useUmat);
+			using var gray = CreateMat(useUmat);
+			using var grad_x = CreateMat(useUmat);
+			using var grad_y = CreateMat(useUmat);
 
 			CvInvoke.GaussianBlur(src, blurred, new Size(3, 3), 0, 0, BorderType.Default);
 			CvInvoke.CvtColor(blurred, gray, ColorConversion.Bgra2Gray);
@@ -53,34 +53,37 @@ namespace Emphasis.TextDetection.Tests
 			sw.Stop();
 			Console.WriteLine($"{(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
 
-			if (grad_x is UMat ux)
-				ux.Save("grad_x.png");
-			if (grad_x is Mat mx)
-				mx.Save("grad_x.png");
-
-			if (grad_y is UMat uy)
-				uy.Save("grad_y.png");
-			if (grad_y is Mat my)
-				my.Save("grad_y.png");
+			Save(grad_x, "grad_x.png");
+			Save(grad_y, "grad_y.png");
 
 			Run("samples/sample13.png");
 			Run("grad_x.png");
 			Run("grad_y.png");
 		}
 
-		[Test]
-		public void Grayscale_UMat()
+		private static IInputOutputArray CreateMat(bool useUmat) => useUmat ? (IInputOutputArray) new UMat() : new Mat();
+		private static void Save(IInputOutputArray mat, string filename)
+		{
+			if (mat is UMat umat)
+				umat.Save(filename);
+			if (mat is Mat m)
+				m.Save(filename);
+		}
+
+		[TestCase(false)]
+		[TestCase(true)]
+		public void Grayscale(bool useUmat)
 		{
 			var sourceBitmap = Samples.sample13;
 			
-			using var src = new UMat();
+			using var src = CreateMat(useUmat);
 
 			var srcMat = sourceBitmap.ToMat();
 			srcMat.CopyTo(src);
 
 			var n = 10000;
 			var sw = new Stopwatch();
-			using var gray = new UMat();
+			using var gray = CreateMat(useUmat);
 
 			CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
 			sw.Start();
@@ -88,36 +91,14 @@ namespace Emphasis.TextDetection.Tests
 			{
 				CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
 			}
-
 			sw.Stop();
-			Console.WriteLine($"{(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
-		}
-
-		[Test]
-		public void Grayscale_Mat()
-		{
-			var sourceBitmap = Samples.sample13;
 			
-			using var src = new Mat();
-
-			var srcMat = sourceBitmap.ToMat();
-			srcMat.CopyTo(src);
-
-			var n = 1000;
-			var sw = new Stopwatch();
-			using var gray = new Mat();
-
-			CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
-			sw.Start();
-			for (var i = 0; i < n; i++)
-			{
-				CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
-			}
-
-			sw.Stop();
 			Console.WriteLine($"{(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
-		}
 
+			Save(gray, "gray.png");
+			Run("gray.png");
+		}
+		
 		[Test]
 		public void Canny()
 		{
@@ -172,25 +153,15 @@ namespace Emphasis.TextDetection.Tests
 
 			var w = sourceBitmap.Width;
 			var h = sourceBitmap.Height;
-
-			IInputOutputArray CreateMat() => useUmat ? (IInputOutputArray) new UMat() : new Mat();
-
-			void Save(IInputOutputArray mat, string filename)
-			{
-				if (mat is UMat umat)
-					umat.Save(filename);
-				if (mat is Mat m)
-					m.Save(filename);
-			}
-
-			using var src = CreateMat();
+			
+			using var src = CreateMat(useUmat);
 
 			var srcMat = sourceBitmap.ToMat();
 			srcMat.CopyTo(src);
 
-			using var gray = CreateMat();
-			using var resized = CreateMat();
-			using var canny = CreateMat();
+			using var gray = CreateMat(useUmat);
+			using var resized = CreateMat(useUmat);
+			using var canny = CreateMat(useUmat);
 
 			CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
 			CvInvoke.Resize(gray, resized, new Size(w * 2, h * 2));
@@ -205,6 +176,7 @@ namespace Emphasis.TextDetection.Tests
 			{
 				try
 				{
+					CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
 					CvInvoke.Resize(gray, resized, new Size(w * 2, h * 2));
 					CvInvoke.Canny(resized, canny, 100, 40);
 				}
