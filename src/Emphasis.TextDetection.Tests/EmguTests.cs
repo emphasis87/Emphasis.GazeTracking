@@ -166,7 +166,7 @@ namespace Emphasis.TextDetection.Tests
 			CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
 			CvInvoke.Resize(gray, resized, new Size(w * 2, h * 2));
 			CvInvoke.Canny(resized, canny, 100, 40);
-
+			
 			var n = 2000;
 			var sw = new Stopwatch();
 			sw.Start();
@@ -174,14 +174,7 @@ namespace Emphasis.TextDetection.Tests
 			var exCount = 0;
 			for (var i = 0; i < n; i++)
 			{
-				try
-				{
-					CvInvoke.Canny(resized, canny, 100, 40);
-				}
-				catch (Exception ex)
-				{
-					exCount++;
-				}
+				CvInvoke.Canny(resized, canny, 100, 40);
 			}
 			
 			sw.Stop();
