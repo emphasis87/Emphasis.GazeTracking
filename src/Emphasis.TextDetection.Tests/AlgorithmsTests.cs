@@ -36,7 +36,7 @@ namespace Emphasis.TextDetection.Tests
 		[Test]
 		public void Sobel_Test()
 		{
-			var sourceBitmap = Samples.sample00;
+			var sourceBitmap = Samples.sample13;
 			var source = sourceBitmap.ToBytes();
 
 			var width = sourceBitmap.Width;

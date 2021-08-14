@@ -83,17 +83,17 @@ namespace Emphasis.ComputerVision.Tests
 				UnoptimizedAlgorithms.Enlarge2(Width, Height, _source, _large, channels);
 			}
 
-			[Benchmark]
-			public void Background5()
-			{
-				UnoptimizedAlgorithms.Background(Width, Height, _source, channels, _grayscaleEq, _background, 5);
-			}
+			//[Benchmark]
+			//public void Background5()
+			//{
+			//	UnoptimizedAlgorithms.Background(Width, Height, _source, channels, _grayscaleEq, _background, 5);
+			//}
 
-			[Benchmark]
-			public void BackgroundLarge7()
-			{
-				UnoptimizedAlgorithms.Background(W2, H2, _large, channels, _grayscaleEq, _background2, 7);
-			}
+			//[Benchmark]
+			//public void BackgroundLarge7()
+			//{
+			//	UnoptimizedAlgorithms.Background(W2, H2, _large, channels, _grayscaleEq, _background2, 7);
+			//}
 		}
 	}
 }

@@ -240,28 +240,30 @@ namespace Emphasis.TextDetection.Tests
 			srcMat.CopyTo(src);
 
 			using var gray = new UMat();
+			using var resized = new UMat();
 			
 			CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
+			CvInvoke.Resize(gray, resized, new Size(w * 2, h * 2));
 			
 			using var detector = new MSERDetector(
 				minArea:5, maxArea:80, edgeBlurSize: 5);
 			using var msers = new VectorOfVectorOfPoint();
 			using var bboxes = new VectorOfRect();
 
-			detector.DetectRegions(gray, msers, bboxes);
+			detector.DetectRegions(resized, msers, bboxes);
 			
 			var sw = new Stopwatch();
 			sw.Start();
 			
 			var n = 100;
 			for(var i = 0; i < n; i++)
-				detector.DetectRegions(gray, msers, bboxes);
+				detector.DetectRegions(resized, msers, bboxes);
 
 			sw.Stop();
 
 			Console.WriteLine($"{(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
 
-			var result = new byte[w * h];
+			var result = new byte[w * 2 * h * 2];
 			foreach (var mser in msers.ToArrayOfArray())
 			{
 				foreach (var point in mser)
@@ -269,14 +271,9 @@ namespace Emphasis.TextDetection.Tests
 					result[point.Y * w + point.X] = 255;
 				}
 			}
-			foreach (var bbox in bboxes.ToArray())
-			{
-				
-			}
-
 
 			Run("samples/sample13.png");
-			//result.RunAs(w, h, 1, "mser.png");
+			result.RunAs(w, h, 1, "mser.png");
 		}
 	}
 }
